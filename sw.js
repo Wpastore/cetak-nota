@@ -1,8 +1,8 @@
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Jika URL tujuan adalah /share-target (sesuai manifest)
-  if (url.pathname === '/share-target' && event.request.method === 'POST') {
+  // Cek apakah URL berakhiran share-target (cocok untuk sub-folder)
+  if (url.pathname.endsWith('share-target') && event.request.method === 'POST') {
     event.respondWith((async () => {
       const formData = await event.request.formData();
       const imageFile = formData.get('receipt_image');
@@ -11,8 +11,9 @@ self.addEventListener('fetch', (event) => {
       const cache = await caches.open('shared-images');
       await cache.put('shared-receipt', new Response(imageFile));
 
-      // Redirect ke halaman utama HTML untuk edit
-      return Response.redirect('/index.html?shared=true', 303);
+      // Redirect relatif terhadap scope repositori GitHub Pages
+      const redirectUrl = new URL('index.html?shared=true', self.registration.scope);
+      return Response.redirect(redirectUrl.href, 303);
     })());
   }
 });
